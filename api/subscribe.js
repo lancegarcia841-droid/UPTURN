@@ -1,28 +1,20 @@
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
+export default async function handler(req, res) {
+    if (req.method !== 'POST') {
+        return res.status(405).json({ error: 'Method Not Allowed' });
+    }
 
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-require('dotenv').config();
-
-// Mailchimp Config
-const MAILCHIMP_API_KEY = process.env.MAILCHIMP_API_KEY;
-const MAILCHIMP_AUDIENCE_ID = process.env.MAILCHIMP_AUDIENCE_ID || 'ca0ed81d80';
-const DATA_CENTER = process.env.DATA_CENTER || 'us2';
-
-app.use(cors());
-app.use(express.json());
-
-// Serve static files from the current directory
-app.use(express.static(__dirname));
-
-app.post('/api/subscribe', async (req, res) => {
     const { email, firstName, lastName, phone, tags } = req.body;
 
     if (!email) {
         return res.status(400).json({ error: 'Email is required' });
+    }
+
+    const MAILCHIMP_API_KEY = process.env.MAILCHIMP_API_KEY;
+    const MAILCHIMP_AUDIENCE_ID = process.env.MAILCHIMP_AUDIENCE_ID || 'ca0ed81d80';
+    const DATA_CENTER = process.env.DATA_CENTER || 'us2';
+
+    if (!MAILCHIMP_API_KEY) {
+        return res.status(500).json({ error: 'Missing Mailchimp API Key in environment variables' });
     }
 
     const data = {
@@ -59,19 +51,15 @@ app.post('/api/subscribe', async (req, res) => {
         const result = await response.json();
 
         if (response.ok) {
-            res.status(200).json({ message: 'Successfully subscribed', id: result.id });
+            return res.status(200).json({ message: 'Successfully subscribed', id: result.id });
         } else if (result.title === 'Member Exists') {
-            res.status(200).json({ message: 'Already subscribed' });
+            return res.status(200).json({ message: 'Already subscribed' });
         } else {
             console.error('Mailchimp API Error:', result);
-            res.status(400).json({ error: result.detail || 'Failed to subscribe' });
+            return res.status(400).json({ error: result.detail || 'Failed to subscribe' });
         }
     } catch (error) {
         console.error('Error calling Mailchimp:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        return res.status(500).json({ error: 'Internal server error' });
     }
-});
-
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-});
+}
