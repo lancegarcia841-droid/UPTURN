@@ -9,9 +9,23 @@ async function submitInquiry() {
     const name = document.getElementById('inp-name').value.trim();
     const email = document.getElementById('inp-email2').value.trim();
     const phone = document.getElementById('inp-tel').value.trim();
+    const businessName = document.getElementById('inp-biz').value.trim();
     const isNewsletterOptIn = document.getElementById('nl-optin').checked;
     
-    const checked = ['s1', 's2', 's3', 's4', 's5', 's6'].some(id => document.getElementById(id).checked);
+    const serviceMap = {
+        's1': 'Business Registration',
+        's2': 'Business Amendment',
+        's3': 'Business Closure',
+        's4': 'Bookkeeping & Tax Compliance',
+        's5': 'Tax Compliance Review',
+        's6': 'Annual Audit'
+    };
+    
+    const selectedServices = Object.keys(serviceMap)
+        .filter(id => document.getElementById(id).checked)
+        .map(id => serviceMap[id]);
+
+    const checked = selectedServices.length > 0;
 
     if (!name || !email) {
         showToast('Please fill in your name and email.');
@@ -31,21 +45,32 @@ async function submitInquiry() {
                 email, 
                 firstName: name,
                 phone: phone,
+                businessName: businessName,
+                services: selectedServices.join(', '),
                 tags: isNewsletterOptIn ? ['Inquiry', 'Newsletter'] : ['Inquiry']
             })
         });
 
         if (response.ok) {
-            showToast('✓ Inquiry sent! We\'ll be in touch within 24 hours.');
+            showToast('✓ Inquiry sent! Redirecting you to book your free consultation…');
             document.getElementById('inp-name').value = '';
             document.getElementById('inp-email2').value = '';
             document.getElementById('inp-biz').value = '';
             document.getElementById('inp-tel').value = '';
             document.getElementById('nl-optin').checked = false;
             ['s1', 's2', 's3', 's4', 's5', 's6'].forEach(id => document.getElementById(id).checked = false);
+            // Open Calendly booking page in a new tab
+            setTimeout(() => {
+                window.open(
+                    'https://calendly.com/upturn-business/meeting-with-upturn?month=2026-06',
+                    '_blank',
+                    'noopener,noreferrer'
+                );
+            }, 800);
         } else {
             const data = await response.json();
-            showToast('Error: ' + (data.error || 'Failed to submit.'));
+            console.error('API Error:', data);
+            showToast('Error: ' + (data.error || 'Failed to submit. Please try again.'));
         }
     } catch (err) {
         console.error(err);
