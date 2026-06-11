@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<c4p>
+  <applications>
+    <app appid="com.codeweavers.c4.7867" timestamp="2013-05-29T11:25:48-05:00">
+      <cxversion product="cxoffice">11.0</cxversion>
+      <name>Pizza Frenzy</name>
+      <name lang="en">Pizza Frenzy</name>
+      <appprofile>
+        <description>Help the Stromboli family pass the pizzas in this tasty treat! Match incoming orders with the right kitchen to deliver fresh pizzas on time to happy customers. Work fast or you'll miss orders... miss too many and you'll be out of business!&#13;
+&#13;
+Aide la famille Stromboli à distribuer les pizzas dans ce jeu appétissant ! Relie les commandes à la cuisine correspondante afin de livrer des pizzas fraîches dans les temps qui contenteront les clients. Agis rapidement afin de n'oublier aucune commande... si tu en rates trop, tu seras viré !</description>
+        <description lang="en">Help the Stromboli family pass the pizzas in this tasty treat! Match incoming orders with the right kitchen to deliver fresh pizzas on time to happy customers. Work fast or you'll miss orders... miss too many and you'll be out of business!&#13;
+&#13;
+Aide la famille Stromboli à distribuer les pizzas dans ce jeu appétissant ! Relie les commandes à la cuisine correspondante afin de livrer des pizzas fraîches dans les temps qui contenteront les clients. Agis rapidement afin de n'oublier aucune commande... si tu en rates trop, tu seras viré !</description>
+        <medal rating="3" platform="Mac" version="9.0.0" num="1" last="2010-08-11T22:44:20-05:00">unbronze</medal>
+        <medal rating="5" platform="Mac" version="12.5.0" num="1" last="2013-08-26T15:57:06-05:00">ungold</medal>
+        <medal rating="5" platform="Mac" version="13.0.0" num="1" last="2013-11-17T17:25:14-06:00">ungold</medal>
+        <medal rating="5" platform="Mac" version="13.0.1" num="1" last="2014-01-15T16:58:16-06:00">ungold</medal>
+        <medal rating="4" platform="Linux" version="22.1.0" num="1" last="2023-02-23T15:34:42-06:00">unsilver</medal>
+        <medal rating="5" platform="Mac" version="24.0.7" num="1" last="2025-03-03T16:06:50-06:00">ungold</medal>
+        <category>Games/Fun Stuff</category>
+        <flag>application</flag>
+        <bottletemplate>win7_64</bottletemplate>
+        <steamid>3430</steamid>
+      </appprofile>
+      <installprofile/>
+    </app>
+    <app appid="com.codeweavers.c4.7867" timestamp="2025-03-26T13:06:29-05:00">
+      <cxversion product="cxoffice">22</cxversion>
+      <name>Pizza Frenzy</name>
+      <name lang="en">Pizza Frenzy</name>
+      <appprofile>
+        <description>Help the Stromboli family pass the pizzas in this tasty treat! Match incoming orders with the right kitchen to deliver fresh pizzas on time to happy customers. Work fast or you'll miss orders... miss too many and you'll be out of business!&#13;
+&#13;
+Aide la famille Stromboli à distribuer les pizzas dans ce jeu appétissant ! Relie les commandes à la cuisine correspondante afin de livrer des pizzas fraîches dans les temps qui contenteront les clients. Agis rapidement afin de n'oublier aucune commande... si tu en rates trop, tu seras viré !</description>
+        <description lang="en">Help the Stromboli family pass the pizzas in this tasty treat! Match incoming orders with the right kitchen to deliver fresh pizzas on time to happy customers. Work fast or you'll miss orders... miss too many and you'll be out of business!&#13;
+&#13;
+Aide la famille Stromboli à distribuer les pizzas dans ce jeu appétissant ! Relie les commandes à la cuisine correspondante afin de livrer des pizzas fraîches dans les temps qui contenteront les clients. Agis rapidement afin de n'oublier aucune commande... si tu en rates trop, tu seras viré !</description>
+        <comment>20230223 Crosstie made with the DVD-ROM (2008) - Dadu042</comment>
+        <medal rating="3" platform="Mac" version="9.0.0" num="1" last="2010-08-11T22:44:20-05:00">unbronze</medal>
+        <medal rating="5" platform="Mac" version="12.5.0" num="1" last="2013-08-26T15:57:06-05:00">ungold</medal>
+        <medal rating="5" platform="Mac" version="13.0.0" num="1" last="2013-11-17T17:25:14-06:00">ungold</medal>
+        <medal rating="5" platform="Mac" version="13.0.1" num="1" last="2014-01-15T16:58:16-06:00">ungold</medal>
+        <medal rating="4" platform="Linux" version="22.1.0" num="1" last="2023-02-23T15:34:42-06:00">unsilver</medal>
+        <medal rating="5" platform="Mac" version="24.0.7" num="1" last="2025-03-03T16:06:50-06:00">ungold</medal>
+        <category>Games/Fun Stuff</category>
+        <flag>application</flag>
+        <bottletemplate>win10_64</bottletemplate>
+        <downloadglob>PizzaFrenzySetup.exe</downloadglob>
+        <steamid>3430</steamid>
+      </appprofile>
+      <cdprofile>
+        <comment>CD-ROM 2008.</comment>
+        <cdglob>
+          <glob>popcdrun.txt</glob>
+          <pattern>PizzaFrenzySetup</pattern>
+        </cdglob>
+        <cdglob>
+          <glob>PopCDRun.exe</glob>
+        </cdglob>
+      </cdprofile>
+    </app>
+  </applications>
+</c4p>
+<!-- SHA2-256 Signature
+a5ed818037a5f3d2ed53530557dd03d8066b18bb164c9cd63b67006fb20ef45919716bb45c052ce45591fb331a38bc8babec50aee46dfa91c6fc1cc58c877972d27bf5b7b8f3820665484f64f4c7f6f48c0908e62d64ba9c792f3baf0fab44041938fa4cb1f2a639f6ed94f360e28cfa8a6361c124f4c208a0a59ac9c12e15fd58307d856c0716ff52a66a3b4dea81f54343635e073ec2dbc9a0419ef45164b4c8df250d4015ef9cc2e0acb1ac64d1207f6ec99d23729449e90efe75ae5d0f330286ff1fab46ab33593be07a25ca3bf7c4612b5d840fc74b2eddc6c2527da7a8a6d5eadfc261a86fd083b6b7eb3933b5f2545aeb9f434f4b1121812716588702
+-->
+<!-- Signature
+2753b408d99c2f15b613478228e6cceb9a2f4951f29ba43750fec46e947c8bd656f21eba2b35cecb59eb451db7c98e295d770e1392b26f4b87a7041e77f7ca673bba6e6075e5d8f98255cdc80747a84dc26e41c1d62388468343c83315bd4bd84b4d0c03c8e8db8d90b940a03a8361b63aeb57772ffd423675a49980b03542ff13f6f2a4820fa75bf72e13aeb95f3088cfca388bb4bdb1afa71df62d9b92de18a47c56a91d85653a1ce0403309df322e07e0ca216e8b20066ca6ae826ad88b984c9c14a27c166509f39e55cc005d7dc65a90df6b798640b2adee6f869d92d262247cf178b6d8d404373f6ef34c3a9b6d6fe5d0093331aed2592f5f2ce2c33400
+-->

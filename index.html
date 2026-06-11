@@ -27,11 +27,7 @@
     <!-- Main nav -->
     <nav class="navbar">
       <div class="nav-logo">
-        <img src="image/2acbe56c-93b3-491a-82dd-0e26d924e48c-e1770614492771.png" alt="Upturn" height="46" class="logo-img" />
-        <div class="nav-brand-text">
-          <span class="nav-brand-name">UPTURN BUSINESS SOLUTIONS</span>
-          <span class="nav-brand-sub">ACCOUNTING · TAX · COMPLIANCE</span>
-        </div>
+        <img src="image/2acbe56c-93b3-491a-82dd-0e26d924e48c-e1770614492771.png" alt="Upturn" height="69" class="logo-img" />
       </div>
       <ul class="nav-links">
         <li><a href="#about">ABOUT</a></li>
@@ -615,8 +611,42 @@
   </footer>
 
   <div class="toast" id="toast"></div>
+
+  <!-- Floating theme toggle -->
+  <button class="theme-toggle-float" onclick="toggleTheme()" aria-label="Toggle dark/light mode">
+    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    </svg>
+    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <circle cx="12" cy="12" r="5"/>
+      <line x1="12" y1="1"  x2="12" y2="3"/>
+      <line x1="12" y1="21" x2="12" y2="23"/>
+      <line x1="4.22" y1="4.22"  x2="5.64" y2="5.64"/>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+      <line x1="1"  y1="12" x2="3"  y2="12"/>
+      <line x1="21" y1="12" x2="23" y2="12"/>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+    </svg>
+  </button>
   <script src="script.js"></script>
   <script>
+    // ── Theme toggle ──────────────────────────────────────────
+    function toggleTheme() {
+      const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+      const next = isLight ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('upturn-theme', next);
+    }
+
+    // Apply saved preference immediately on load (no flash)
+    (function () {
+      const saved = localStorage.getItem('upturn-theme');
+      if (saved === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();
+
     function toggleMobileNav() {
       const nav = document.getElementById('mobile-nav');
       nav.classList.toggle('open');
