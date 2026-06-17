@@ -1,5 +1,7 @@
 // Note: On Vercel, env vars are injected automatically. dotenv is not needed here.
 
+const crypto = require('crypto');
+
 module.exports = async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method Not Allowed' });
@@ -11,62 +13,100 @@ module.exports = async function handler(req, res) {
         return res.status(400).json({ error: 'Email is required' });
     }
 
-    const MAILCHIMP_API_KEY = process.env.MAILCHIMP_API_KEY;
+    const MAILCHIMP_API_KEY   = process.env.MAILCHIMP_API_KEY;
     const MAILCHIMP_AUDIENCE_ID = process.env.MAILCHIMP_AUDIENCE_ID || 'ca0ed81d80';
-    const DATA_CENTER = process.env.DATA_CENTER || 'us2';
+    const DATA_CENTER         = process.env.DATA_CENTER || 'us2';
 
     if (!MAILCHIMP_API_KEY) {
         return res.status(500).json({ error: 'Missing Mailchimp API Key in environment variables' });
     }
 
-    const data = {
+    const authHeader = {
+        'Authorization': `Basic ${Buffer.from(`any:${MAILCHIMP_API_KEY}`).toString('base64')}`,
+        'Content-Type': 'application/json'
+    };
+
+    const baseUrl = `https://${DATA_CENTER}.api.mailchimp.com/3.0/lists/${MAILCHIMP_AUDIENCE_ID}`;
+
+    // ── Build member payload (no tags here — applied separately below) ──
+    const memberData = {
         email_address: email,
-        status: 'subscribed',
-        merge_fields: {},
-        tags: tags || []
+        status_if_new: 'subscribed', // won't re-subscribe existing members
+        status:        'subscribed',
+        merge_fields:  {}
     };
 
     if (firstName) {
-        data.merge_fields.FNAME = firstName;
+        if (firstName.includes(' ')) {
+            const parts = firstName.split(' ');
+            memberData.merge_fields.FNAME = parts[0];
+            memberData.merge_fields.LNAME = parts.slice(1).join(' ');
+        } else {
+            memberData.merge_fields.FNAME = firstName;
+        }
     }
-    if (lastName) {
-        data.merge_fields.LNAME = lastName;
-    } else if (firstName && firstName.includes(' ')) {
-        const parts = firstName.split(' ');
-        data.merge_fields.FNAME = parts[0];
-        data.merge_fields.LNAME = parts.slice(1).join(' ');
-    }
-    if (phone) {
-        data.merge_fields.PHONE = phone;
-    }
-    if (businessName) {
-        data.merge_fields.COMPANY = businessName;
-    }
-    if (services) {
-        data.merge_fields.SERVICES = services;
-    }
+    if (lastName)     memberData.merge_fields.LNAME   = lastName;
+    if (phone)        memberData.merge_fields.PHONE    = phone;
+    if (businessName) memberData.merge_fields.COMPANY  = businessName;
+    if (services)     memberData.merge_fields.SERVICES = services;
+
+    // ── MD5 hash of lowercase email (Mailchimp subscriber ID) ──────────
+    const subscriberHash = crypto
+        .createHash('md5')
+        .update(email.toLowerCase())
+        .digest('hex');
 
     try {
-        const response = await fetch(`https://${DATA_CENTER}.api.mailchimp.com/3.0/lists/${MAILCHIMP_AUDIENCE_ID}/members`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Basic ${Buffer.from(`any:${MAILCHIMP_API_KEY}`).toString('base64')}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
+        // ── Step 1: Upsert the member (PUT creates or updates) ──────────
+        const memberRes = await fetch(`${baseUrl}/members/${subscriberHash}`, {
+            method:  'PUT',
+            headers: authHeader,
+            body:    JSON.stringify(memberData)
         });
 
-        const result = await response.json();
+        const memberResult = await memberRes.json();
 
-        if (response.ok) {
-            return res.status(200).json({ message: 'Successfully subscribed', id: result.id });
-        } else if (result.title === 'Member Exists') {
-            return res.status(200).json({ message: 'Already subscribed' });
-        } else {
-            console.error('Mailchimp API Error details:', JSON.stringify(result, null, 2));
-            const errorMsg = result.detail || result.title || 'Failed to subscribe to Mailchimp';
+        if (!memberRes.ok) {
+            console.error('Mailchimp member upsert error:', JSON.stringify(memberResult, null, 2));
+            const errorMsg = memberResult.detail || memberResult.title || 'Failed to save contact';
             return res.status(400).json({ error: errorMsg });
         }
+
+        // ── Step 2: Apply tags via the dedicated tags endpoint ──────────
+        // Build tag list: always "Inquiry", plus one tag per selected service,
+        // plus "Newsletter" if opted in.
+        const serviceList = services
+            ? services.split(',').map(s => s.trim()).filter(Boolean)
+            : [];
+
+        const tagsToApply = [
+            'Inquiry',
+            ...serviceList,
+            ...(tags || []).filter(t => t !== 'Inquiry') // avoid duplicate Inquiry
+        ];
+
+        const uniqueTags = [...new Set(tagsToApply)];
+
+        const tagsPayload = {
+            tags: uniqueTags.map(name => ({ name, status: 'active' }))
+        };
+
+        const tagsRes = await fetch(`${baseUrl}/members/${subscriberHash}/tags`, {
+            method:  'POST',
+            headers: authHeader,
+            body:    JSON.stringify(tagsPayload)
+        });
+
+        // Mailchimp returns 204 No Content on success for tags
+        if (!tagsRes.ok) {
+            const tagsResult = await tagsRes.json();
+            console.error('Mailchimp tags error:', JSON.stringify(tagsResult, null, 2));
+            // Member was saved — don't fail the whole request over tags
+            return res.status(200).json({ message: 'Contact saved, but tags failed to apply', id: memberResult.id });
+        }
+
+        return res.status(200).json({ message: 'Successfully saved contact and applied tags', id: memberResult.id });
+
     } catch (error) {
         console.error('Network/Internal Error calling Mailchimp:', error.message || error);
         return res.status(500).json({ error: 'Internal server error while calling Mailchimp' });
