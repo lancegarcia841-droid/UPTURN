@@ -64,7 +64,7 @@ async function submitInquiry() {
                 phone,
                 businessName,
                 services:     selectedServices.join(', '),
-                tags: isNewsletterOptIn ? ['Inquiry', 'Newsletter'] : ['Inquiry']
+                newsletter:   isNewsletterOptIn
             })
         });
 

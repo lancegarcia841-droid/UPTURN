@@ -7,15 +7,15 @@ module.exports = async function handler(req, res) {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
-    const { email, firstName, lastName, phone, businessName, services, tags } = req.body;
+    const { email, firstName, lastName, phone, businessName, services, newsletter } = req.body;
 
     if (!email) {
         return res.status(400).json({ error: 'Email is required' });
     }
 
-    const MAILCHIMP_API_KEY   = process.env.MAILCHIMP_API_KEY;
+    const MAILCHIMP_API_KEY     = process.env.MAILCHIMP_API_KEY;
     const MAILCHIMP_AUDIENCE_ID = process.env.MAILCHIMP_AUDIENCE_ID || 'ca0ed81d80';
-    const DATA_CENTER         = process.env.DATA_CENTER || 'us2';
+    const DATA_CENTER           = process.env.DATA_CENTER || 'us2';
 
     if (!MAILCHIMP_API_KEY) {
         return res.status(500).json({ error: 'Missing Mailchimp API Key in environment variables' });
@@ -28,10 +28,10 @@ module.exports = async function handler(req, res) {
 
     const baseUrl = `https://${DATA_CENTER}.api.mailchimp.com/3.0/lists/${MAILCHIMP_AUDIENCE_ID}`;
 
-    // ── Build member payload (no tags here — applied separately below) ──
+    // ── Build member payload ────────────────────────────────────────────
     const memberData = {
         email_address: email,
-        status_if_new: 'subscribed', // won't re-subscribe existing members
+        status_if_new: 'subscribed',
         status:        'subscribed',
         merge_fields:  {}
     };
@@ -45,7 +45,7 @@ module.exports = async function handler(req, res) {
             memberData.merge_fields.FNAME = firstName;
         }
     }
-    if (lastName)     memberData.merge_fields.LNAME   = lastName;
+    if (lastName)     memberData.merge_fields.LNAME    = lastName;
     if (phone)        memberData.merge_fields.PHONE    = phone;
     if (businessName) memberData.merge_fields.COMPANY  = businessName;
     if (services)     memberData.merge_fields.SERVICES = services;
@@ -57,7 +57,7 @@ module.exports = async function handler(req, res) {
         .digest('hex');
 
     try {
-        // ── Step 1: Upsert the member (PUT creates or updates) ──────────
+        // ── Step 1: Upsert the member ───────────────────────────────────
         const memberRes = await fetch(`${baseUrl}/members/${subscriberHash}`, {
             method:  'PUT',
             headers: authHeader,
@@ -72,39 +72,40 @@ module.exports = async function handler(req, res) {
             return res.status(400).json({ error: errorMsg });
         }
 
-        // ── Step 2: Apply tags via the dedicated tags endpoint ──────────
-        // Build tag list: always "Inquiry", plus one tag per selected service,
-        // plus "Newsletter" if opted in.
+        // ── Step 2: Build and apply tags ────────────────────────────────
+        // Always tag as "Cold Lead".
+        // Add one tag per checked service.
+        // Add "Newsletter" if opted in.
         const serviceList = services
             ? services.split(',').map(s => s.trim()).filter(Boolean)
             : [];
 
         const tagsToApply = [
-            'Inquiry',
+            'Cold Lead',
             ...serviceList,
-            ...(tags || []).filter(t => t !== 'Inquiry') // avoid duplicate Inquiry
+            ...(newsletter ? ['Newsletter'] : [])
         ];
 
         const uniqueTags = [...new Set(tagsToApply)];
 
-        const tagsPayload = {
-            tags: uniqueTags.map(name => ({ name, status: 'active' }))
-        };
+        console.log(`[Upturn] Applying tags to ${email}:`, uniqueTags);
 
         const tagsRes = await fetch(`${baseUrl}/members/${subscriberHash}/tags`, {
             method:  'POST',
             headers: authHeader,
-            body:    JSON.stringify(tagsPayload)
+            body:    JSON.stringify({
+                tags: uniqueTags.map(name => ({ name, status: 'active' }))
+            })
         });
 
         // Mailchimp returns 204 No Content on success for tags
         if (!tagsRes.ok) {
             const tagsResult = await tagsRes.json();
             console.error('Mailchimp tags error:', JSON.stringify(tagsResult, null, 2));
-            // Member was saved — don't fail the whole request over tags
             return res.status(200).json({ message: 'Contact saved, but tags failed to apply', id: memberResult.id });
         }
 
+        console.log(`[Upturn] Contact saved and tagged successfully: ${email}`);
         return res.status(200).json({ message: 'Successfully saved contact and applied tags', id: memberResult.id });
 
     } catch (error) {
