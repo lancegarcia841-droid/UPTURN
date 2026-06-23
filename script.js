@@ -1,6 +1,82 @@
 const CALENDLY_URL = 'https://calendly.com/upturn-business/meeting-with-upturn?month=2026-06';
 let isSubmitting = false;
 
+// ── GA4 helper ────────────────────────────────────────────────────────────
+function trackEvent(eventName, params = {}) {
+    if (typeof gtag === 'function') {
+        gtag('event', eventName, params);
+    }
+}
+
+// ── Scroll depth tracking (25 / 50 / 75 / 100%) ─────────────────────────
+(function () {
+    const milestones = [25, 50, 75, 100];
+    const reached = new Set();
+
+    window.addEventListener('scroll', function () {
+        const scrolled = window.scrollY + window.innerHeight;
+        const total    = document.documentElement.scrollHeight;
+        const pct      = Math.round((scrolled / total) * 100);
+
+        milestones.forEach(function (m) {
+            if (pct >= m && !reached.has(m)) {
+                reached.add(m);
+                trackEvent('scroll_depth', { depth_percentage: m });
+            }
+        });
+    }, { passive: true });
+})();
+
+// ── CTA click tracking ────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function () {
+
+    // "INQUIRE NOW" and "OUR SERVICES" hero buttons
+    document.querySelectorAll('.btn-gold, .btn-outline-blue').forEach(function (el) {
+        el.addEventListener('click', function () {
+            trackEvent('cta_click', {
+                button_text:     el.textContent.trim(),
+                button_location: 'hero'
+            });
+        });
+    });
+
+    // Nav "FREE CONSULTATION" button
+    document.querySelector('.nav-cta')?.addEventListener('click', function () {
+        trackEvent('cta_click', {
+            button_text:     'FREE CONSULTATION',
+            button_location: 'navbar'
+        });
+    });
+
+    // Mobile nav CTA
+    document.querySelector('.mobile-cta')?.addEventListener('click', function () {
+        trackEvent('cta_click', {
+            button_text:     'FREE CONSULTATION',
+            button_location: 'mobile_nav'
+        });
+    });
+
+    // "Talk to Us" button in Who We Are section
+    document.querySelector('.btn-navy-pill')?.addEventListener('click', function () {
+        trackEvent('cta_click', {
+            button_text:     'Talk to Us',
+            button_location: 'who_we_are'
+        });
+    });
+
+    // Service checkboxes
+    document.querySelectorAll('.checklist input[type="checkbox"]').forEach(function (cb) {
+        cb.addEventListener('change', function () {
+            if (cb.checked) {
+                const label = cb.closest('.check-item')
+                    ?.querySelector('.check-text')?.textContent.trim();
+                trackEvent('service_selected', { service_name: label });
+            }
+        });
+    });
+
+});
+
 function showToast(msg) {
     const t = document.getElementById('toast');
     t.textContent = msg;
@@ -70,6 +146,12 @@ async function submitInquiry() {
 
         if (response.ok) {
             showToast('✓ Inquiry sent! Redirecting to Calendly…');
+
+            // Track successful signup
+            trackEvent('signup_complete', {
+                services_selected: selectedServices.join(', '),
+                newsletter_opt_in: isNewsletterOptIn
+            });
 
             // Clear form
             ['inp-name','inp-email2','inp-biz','inp-tel']
